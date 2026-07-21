@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The New World</title>
+    
+    <!-- Иконка сайта (Favicon) -->
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+
     <style>
         /* ТЁМНАЯ ТЕМА (по умолчанию) */
         :root {
@@ -503,7 +507,6 @@
             const sidebar = document.getElementById('profile-sidebar');
             sidebar.classList.add('open');
 
-            // Включаем затемнение только на мобильных (экраны <= 850px)
             if (window.innerWidth <= 850) {
                 document.getElementById('modal-overlay').classList.add('active');
             }

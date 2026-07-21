@@ -25,6 +25,7 @@
             --border-color: rgba(255, 255, 255, 0.1);
             --social-btn-bg: #2a2a2a;
             --overlay-bg: rgba(0, 0, 0, 0.7);
+            --nav-active: #3ea6ff;
         }
 
         /* СВЕТЛАЯ ТЕМА */
@@ -43,6 +44,7 @@
             --border-color: rgba(0, 0, 0, 0.1);
             --social-btn-bg: #eaeaea;
             --overlay-bg: rgba(0, 0, 0, 0.4);
+            --nav-active: #0066cc;
         }
 
         body { 
@@ -77,11 +79,50 @@
         .total-subs {
             color: var(--text-secondary);
             font-size: 16px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-weight: 500;
         }
 
-        /* Главный контейнер сетки */
+        /* Навигация / Табы */
+        .nav-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--nav-active);
+            color: #ffffff;
+        }
+
+        /* Контейнеры вкладок */
+        .tab-content {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Главный контейнер сетки рейтинга */
         .main-layout {
             display: flex;
             gap: 20px;
@@ -134,7 +175,7 @@
         }
 
         .card.active {
-            border-color: #3ea6ff;
+            border-color: var(--nav-active);
             background-color: var(--card-active-bg);
         }
 
@@ -291,6 +332,112 @@
             color: #ffffff; 
         }
 
+        /* --- СТИЛИ ДЛЯ ЛЕНТЫ ВИДЕО --- */
+        .feed-container {
+            width: 100%;
+            max-width: 1050px;
+        }
+
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: var(--card-hover-bg);
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .video-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--card-shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--card-shadow);
+        }
+
+        .video-thumb {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* Соотношение 16:9 */
+            background: #000;
+            display: block;
+        }
+
+        .video-thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .video-channel {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--nav-active);
+            margin-bottom: 6px;
+        }
+
+        .video-title {
+            font-size: 15px;
+            font-weight: bold;
+            line-height: 1.3;
+            color: var(--text-primary);
+            text-decoration: none;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-title:hover {
+            opacity: 0.8;
+        }
+
+        .video-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: auto;
+        }
+
         /* Кнопка смены темы */
         .theme-toggle-btn {
             position: fixed;
@@ -327,7 +474,7 @@
             z-index: 1001;
         }
 
-        /* Подложка активна ТОЛЬКО на экранах до 850px */
+        /* Адаптив */
         @media (max-width: 850px) {
             .modal-overlay.active {
                 display: block;
@@ -364,32 +511,50 @@
 
     <div class="total-subs" id="total-subs">Загрузка общей статистики...</div>
 
-    <div class="main-layout" id="main-layout">
-        <!-- Список -->
-        <div class="list-container" id="top">Загрузка данных...</div>
+    <!-- Вкладки Навигации -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="tab-top-btn" onclick="switchTab('top')">🏆 Топ каналов</button>
+        <button class="tab-btn" id="tab-feed-btn" onclick="switchTab('feed')">🎬 Лента видео</button>
+    </div>
 
-        <!-- Профиль блогера -->
-        <div class="profile-sidebar" id="profile-sidebar">
-            <button class="close-btn" onclick="closeProfile()">✕</button>
-            <img class="profile-avatar" id="p-avatar" src="" alt="Avatar">
-            <div class="profile-title" id="p-title"></div>
-            <div class="profile-subs" id="p-subs"></div>
+    <!-- Вкладка 1: ТОП КАНАЛОВ -->
+    <div class="tab-content" id="tab-top">
+        <div class="main-layout" id="main-layout">
+            <div class="list-container" id="top">Загрузка данных...</div>
 
-            <div class="profile-stats">
-                <div>
-                    <div class="stat-value" id="p-videos">-</div>
-                    <div class="stat-item">Видео</div>
+            <div class="profile-sidebar" id="profile-sidebar">
+                <button class="close-btn" onclick="closeProfile()">✕</button>
+                <img class="profile-avatar" id="p-avatar" src="" alt="Avatar">
+                <div class="profile-title" id="p-title"></div>
+                <div class="profile-subs" id="p-subs"></div>
+
+                <div class="profile-stats">
+                    <div>
+                        <div class="stat-value" id="p-videos">-</div>
+                        <div class="stat-item">Видео</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="p-views">-</div>
+                        <div class="stat-item">Просмотров</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="stat-value" id="p-views">-</div>
-                    <div class="stat-item">Просмотров</div>
-                </div>
+
+                <div class="profile-desc" id="p-desc"></div>
+
+                <div class="social-links" id="p-socials"></div>
             </div>
+        </div>
+    </div>
 
-            <div class="profile-desc" id="p-desc"></div>
-
-            <div class="social-links" id="p-socials">
-                <!-- Ссылки генерируются JS -->
+    <!-- Вкладка 2: ЛЕНТА ВИДЕО -->
+    <div class="tab-content" id="tab-feed" style="display: none;">
+        <div class="feed-container">
+            <div class="feed-header">
+                <h2 style="margin: 0; font-size: 20px;">9 последних видео Альянса</h2>
+                <button class="refresh-btn" onclick="fetchVideoFeed(true)">🔄 Обновить</button>
+            </div>
+            <div class="video-grid" id="video-grid">
+                <div>Загрузка ленты...</div>
             </div>
         </div>
     </div>
@@ -406,7 +571,7 @@
             'UC4yABm3nOGLO5Dw3JdLOOSw', //Уранофил
             'UCzy14oq4lmBYzN9jQ39D4Yw', //NewFton
             'UCOJaaiwti0qCoUreMi1FOSg', //Команданте
-            'UCP1x1rxnStKreLblrm7vlMg', //jrjikmnd [0-60]
+            'UCP1x1rxnStKreLblrm7vlMg', //jrjikmnd
             'UCtH8SzOzXPJbz8957shhZkg', //Клубника_Blitz
             'UCVFM_hwowa7VpAT1V9xPhSQ', //Ritmichn
             'UCaVgYbisiZorJkUrfKSPeew', //Catzo_TV
@@ -422,8 +587,8 @@
         ];
 
         const CUSTOM_SOCIALS = {};
-
         let channelsData = [];
+        let isFeedLoaded = false;
 
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -445,6 +610,31 @@
             btn.innerText = theme === 'dark' ? '☀️' : '🌙';
         }
 
+        /* ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК */
+        function switchTab(tab) {
+            const topTab = document.getElementById('tab-top');
+            const feedTab = document.getElementById('tab-feed');
+            const topBtn = document.getElementById('tab-top-btn');
+            const feedBtn = document.getElementById('tab-feed-btn');
+
+            if (tab === 'top') {
+                topTab.style.display = 'flex';
+                feedTab.style.display = 'none';
+                topBtn.classList.add('active');
+                feedBtn.classList.remove('active');
+            } else {
+                topTab.style.display = 'none';
+                feedTab.style.display = 'flex';
+                topBtn.classList.remove('active');
+                feedBtn.classList.add('active');
+
+                if (!isFeedLoaded) {
+                    fetchVideoFeed();
+                }
+            }
+        }
+
+        /* ЗАГРУЗКА ТОПА КАНАЛОВ */
         async function fetchYoutubers() {
             const ids = CHANNEL_IDS.join(',');
             const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${ids}&key=${API_KEY}`;
@@ -549,6 +739,103 @@
             document.getElementById('main-layout').classList.remove('has-sidebar');
             document.getElementById('profile-sidebar').classList.remove('open');
             document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        /* ЗАГРУЗКА И СОРТИРОВКА ЛЕНТЫ (9 ПОСЛЕДНИХ ВИДЕО) */
+        async function fetchVideoFeed(forceRefresh = false) {
+            const grid = document.getElementById('video-grid');
+            
+            // Проверка кэша (10 минут)
+            const cachedData = localStorage.getItem('yt_video_feed');
+            const cachedTime = localStorage.getItem('yt_video_feed_time');
+            const now = new Date().getTime();
+
+            if (!forceRefresh && cachedData && cachedTime && (now - cachedTime < 10 * 60 * 1000)) {
+                renderFeed(JSON.parse(cachedData));
+                isFeedLoaded = true;
+                return;
+            }
+
+            grid.innerHTML = '<div>Загрузка свежих видео Альянса...</div>';
+
+            try {
+                // Берем по 1 видео с каждого канала для экономии квоты
+                const videoPromises = CHANNEL_IDS.map(async (channelId) => {
+                    const uploadsPlaylistId = 'UU' + channelId.substring(2);
+                    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=1&key=${API_KEY}`;
+                    
+                    const res = await fetch(url);
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    
+                    if (!data.items || data.items.length === 0) return null;
+
+                    const item = data.items[0];
+                    return {
+                        title: item.snippet.title,
+                        channelTitle: item.snippet.channelTitle,
+                        videoId: item.snippet.resourceId.videoId,
+                        publishedAt: item.snippet.publishedAt,
+                        thumbnail: item.snippet.thumbnails.medium ? item.snippet.thumbnails.medium.url : item.snippet.thumbnails.default.url
+                    };
+                });
+
+                const results = await Promise.all(videoPromises);
+                
+                // Фильтруем пустые элементы
+                const allVideos = results.filter(v => v !== null);
+
+                // СОРТИРОВКА В ХРОНОЛОГИЧЕСКОМ ПОРЯДКЕ (СНАЧАЛА САМЫЕ СВЕЖИЕ)
+                allVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
+                // Оставляем ровно 9 ПОСЛЕДНИХ видео
+                const top9Videos = allVideos.slice(0, 9);
+
+                // Сохраняем в кэш
+                localStorage.setItem('yt_video_feed', JSON.stringify(top9Videos));
+                localStorage.setItem('yt_video_feed_time', now.toString());
+
+                renderFeed(top9Videos);
+                isFeedLoaded = true;
+
+            } catch (err) {
+                console.error('Ошибка при загрузке ленты:', err);
+                grid.innerHTML = '<div>Не удалось загрузить ленту видео.</div>';
+            }
+        }
+
+        function renderFeed(videos) {
+            const grid = document.getElementById('video-grid');
+            if (videos.length === 0) {
+                grid.innerHTML = '<div>Видео не найдены.</div>';
+                return;
+            }
+
+            grid.innerHTML = videos.map(video => {
+                const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+                const pubDate = new Date(video.publishedAt).toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                return `
+                    <div class="video-card">
+                        <a href="${videoUrl}" target="_blank" class="video-thumb">
+                            <img src="${video.thumbnail}" alt="${video.title}">
+                        </a>
+                        <div class="video-body">
+                            <div class="video-channel">${video.channelTitle}</div>
+                            <a href="${videoUrl}" target="_blank" class="video-title" title="${video.title}">
+                                ${video.title}
+                            </a>
+                            <div class="video-date">${pubDate}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         initTheme();

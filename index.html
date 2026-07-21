@@ -20,6 +20,7 @@
             --toggle-btn-text: #000000;
             --border-color: rgba(255, 255, 255, 0.1);
             --social-btn-bg: #2a2a2a;
+            --overlay-bg: rgba(0, 0, 0, 0.7);
         }
 
         /* СВЕТЛАЯ ТЕМА */
@@ -37,6 +38,7 @@
             --toggle-btn-text: #ffffff;
             --border-color: rgba(0, 0, 0, 0.1);
             --social-btn-bg: #eaeaea;
+            --overlay-bg: rgba(0, 0, 0, 0.4);
         }
 
         body { 
@@ -160,7 +162,7 @@
         .name { font-size: 18px; font-weight: bold; color: var(--text-primary); }
         .subs { color: var(--text-secondary); font-size: 14px; margin-top: 2px; }
 
-        /* Сайдбар профиля справа */
+        /* Сайдбар профиля справа (ПК) */
         .profile-sidebar {
             width: 380px;
             background: var(--card-bg);
@@ -192,7 +194,7 @@
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             padding: 0 5px;
             margin-bottom: 10px;
@@ -274,7 +276,6 @@
             transform: translateY(-1px);
         }
 
-        /* Стиль иконки внутри кнопки */
         .social-icon {
             width: 20px;
             height: 20px;
@@ -309,21 +310,51 @@
 
         .theme-toggle-btn:hover { transform: scale(1.1); }
 
-        /* Адаптив под мобильные */
+        /* Оверлей-подложка только для мобильных */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--overlay-bg);
+            backdrop-filter: blur(4px);
+            z-index: 1001;
+        }
+
+        /* Подложка активна ТОЛЬКО на экранах до 850px */
         @media (max-width: 850px) {
-            .main-layout.has-sidebar {
-                flex-direction: column;
+            .modal-overlay.active {
+                display: block;
             }
+
             .profile-sidebar {
-                width: 100%;
-                position: static;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90%;
+                max-width: 420px;
+                max-height: 85vh;
+                overflow-y: auto;
+                z-index: 1002;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            @keyframes popUp {
+                from { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             }
         }
     </style>
 </head>
 <body>
 
-    <a href="https://t.me/NewWorldBlitz" target="_blank" class="title-link" title="Перейти в Telegram">
+    <div class="modal-overlay" id="modal-overlay" onclick="closeProfile()"></div>
+
+    <a href="https://t.me/your_channel" target="_blank" class="title-link" title="Перейти в Telegram">
         <h1>The New World</h1>
     </a>
 
@@ -333,7 +364,7 @@
         <!-- Список -->
         <div class="list-container" id="top">Загрузка данных...</div>
 
-        <!-- Профиль справа -->
+        <!-- Профиль блогера -->
         <div class="profile-sidebar" id="profile-sidebar">
             <button class="close-btn" onclick="closeProfile()">✕</button>
             <img class="profile-avatar" id="p-avatar" src="" alt="Avatar">
@@ -472,6 +503,11 @@
             const sidebar = document.getElementById('profile-sidebar');
             sidebar.classList.add('open');
 
+            // Включаем затемнение только на мобильных (экраны <= 850px)
+            if (window.innerWidth <= 850) {
+                document.getElementById('modal-overlay').classList.add('active');
+            }
+
             document.getElementById('p-avatar').src = channel.snippet.thumbnails.medium.url;
             document.getElementById('p-title').innerText = channel.snippet.title;
             document.getElementById('p-subs').innerText = `${Number(channel.statistics.subscriberCount).toLocaleString('ru-RU')} подписчиков`;
@@ -487,7 +523,6 @@
 
             const socialsContainer = document.getElementById('p-socials');
             
-            // Вставляем кнопку с иконкой yt.svg
             socialsContainer.innerHTML = `
                 <a href="${channelUrl}" target="_blank" class="social-btn yt-btn">
                     <img src="yt.svg" class="social-icon" alt="YouTube">
@@ -510,6 +545,7 @@
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             document.getElementById('main-layout').classList.remove('has-sidebar');
             document.getElementById('profile-sidebar').classList.remove('open');
+            document.getElementById('modal-overlay').classList.remove('active');
         }
 
         initTheme();

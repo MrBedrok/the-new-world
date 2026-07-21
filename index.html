@@ -5,38 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The New World</title>
     <style>
-        /* Переменные для ТЁМНОЙ темы (по умолчанию) */
+        /* ТЁМНАЯ ТЕМА (по умолчанию) */
         :root {
             --bg-color: #121212;
             --text-primary: #ffffff;
             --text-secondary: #aaaaaa;
             --card-bg: #1e1e1e;
             --card-hover-bg: #282828;
+            --card-active-bg: #333333;
             --card-shadow: rgba(0, 0, 0, 0.4);
-            --tab-btn-bg: #2c2c2c;
-            --tab-btn-text: #ffffff;
-            --tab-btn-active-bg: #ffffff;
-            --tab-btn-active-text: #000000;
+            --bar-bg: rgba(255, 255, 255, 0.08);
             --avatar-bg: #333333;
             --toggle-btn-bg: #ffffff;
             --toggle-btn-text: #000000;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --social-btn-bg: #2a2a2a;
         }
 
-        /* Переменные для СВЕТЛОЙ темы */
+        /* СВЕТЛАЯ ТЕМА */
         [data-theme="light"] {
             --bg-color: #f9f9f9;
             --text-primary: #000000;
             --text-secondary: #555555;
             --card-bg: #ffffff;
-            --card-hover-bg: #ffffff;
+            --card-hover-bg: #f0f0f0;
+            --card-active-bg: #e5e5e5;
             --card-shadow: rgba(0, 0, 0, 0.08);
-            --tab-btn-bg: #e0e0e0;
-            --tab-btn-text: #000000;
-            --tab-btn-active-bg: #000000;
-            --tab-btn-active-text: #ffffff;
+            --bar-bg: rgba(0, 0, 0, 0.06);
             --avatar-bg: #eee;
             --toggle-btn-bg: #1e1e1e;
             --toggle-btn-text: #ffffff;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --social-btn-bg: #eaeaea;
         }
 
         body { 
@@ -51,51 +51,52 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        .title-link {
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .title-link:hover {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
+
         h1 { 
-            color: var(--text-primary); 
             margin-bottom: 5px;
             font-size: 32px;
+            text-align: center;
         }
 
         .total-subs {
             color: var(--text-secondary);
             font-size: 16px;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
             font-weight: 500;
         }
 
-        /* Кнопки переключения вкладок */
-        .tabs {
+        /* Главный контейнер сетки */
+        .main-layout {
             display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        .tab-btn {
-            background-color: var(--tab-btn-bg);
-            color: var(--tab-btn-text);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background-color: var(--tab-btn-active-bg);
-            color: var(--tab-btn-active-text);
+            gap: 20px;
+            width: 100%;
+            max-width: 650px;
+            transition: max-width 0.4s ease;
         }
 
-        .top-container { width: 100%; max-width: 700px; }
-
-        /* Вкладка 1: Карточки */
-        .card-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            margin: 10px 0;
+        .main-layout.has-sidebar {
+            max-width: 1050px;
         }
+
+        .list-container { 
+            flex: 1;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Карточка блогера */
         .card { 
+            position: relative;
             display: flex; 
             align-items: center; 
             background: var(--card-bg); 
@@ -103,20 +104,48 @@
             border-radius: 12px; 
             box-shadow: 0 2px 8px var(--card-shadow); 
             transition: all 0.2s ease-in-out;
+            overflow: hidden;
+            cursor: pointer;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
         }
-        .card-link:hover .card {
-            transform: translateY(-3px);
-            background-color: var(--card-hover-bg);
+
+        .card-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background-color: var(--bar-bg);
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            transition: width 0.6s ease-out;
+            z-index: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
             box-shadow: 0 6px 16px var(--card-shadow);
         }
+
+        .card.active {
+            border-color: #3ea6ff;
+            background-color: var(--card-active-bg);
+        }
+
+        .rank, .avatar, .info {
+            position: relative;
+            z-index: 2;
+        }
+
         .rank { 
-            font-size: 22px; 
+            font-size: 20px; 
             font-weight: bold; 
             color: var(--text-primary);
             margin-right: 15px; 
-            width: 30px; 
+            width: 35px; 
             text-align: center; 
         }
+
         .avatar { 
             width: 50px; 
             height: 50px; 
@@ -124,61 +153,140 @@
             margin-right: 15px; 
             object-fit: cover;
             background-color: var(--avatar-bg);
+            border: 1px solid var(--bar-bg);
         }
+
         .info { flex-grow: 1; }
         .name { font-size: 18px; font-weight: bold; color: var(--text-primary); }
         .subs { color: var(--text-secondary); font-size: 14px; margin-top: 2px; }
 
-        /* Вкладка 2: Горизонтальные полоски */
-        .chart-row {
-            display: flex;
+        /* Сайдбар профиля справа */
+        .profile-sidebar {
+            width: 380px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 16px var(--card-shadow);
+            display: none;
+            flex-direction: column;
             align-items: center;
-            margin: 12px 0;
-            text-decoration: none;
-            color: inherit;
-        }
-        .chart-name {
-            width: 140px;
-            text-align: right;
-            padding-right: 15px;
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: var(--text-primary);
-        }
-        .chart-bar-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-        }
-        .chart-bar {
-            height: 36px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 5px;
-            transition: width 0.6s ease-out;
-            min-width: 40px;
-        }
-        .chart-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 2px solid white;
-            object-fit: cover;
-        }
-        .chart-subs {
-            margin-left: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--text-primary);
-            white-space: nowrap;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease;
+            box-sizing: border-box;
         }
 
-        /* Кнопка переключения темы в правом нижнем углу */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .profile-sidebar.open {
+            display: flex;
+        }
+
+        .close-btn {
+            align-self: flex-end;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 5px;
+            margin-bottom: 10px;
+        }
+
+        .close-btn:hover { color: var(--text-primary); }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+        }
+
+        .profile-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .profile-subs {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-item { font-size: 13px; color: var(--text-secondary); }
+        .stat-value { font-size: 15px; font-weight: bold; color: var(--text-primary); }
+
+        .profile-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            width: 100%;
+            white-space: pre-line;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        .social-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 11px;
+            border-radius: 8px;
+            background-color: var(--social-btn-bg);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .social-btn:hover { 
+            opacity: 0.9; 
+            transform: translateY(-1px);
+        }
+
+        /* Стиль иконки внутри кнопки */
+        .social-icon {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .yt-btn { 
+            background-color: #ff0000; 
+            color: #ffffff; 
+        }
+
+        /* Кнопка смены темы */
         .theme-toggle-btn {
             position: fixed;
             bottom: 25px;
@@ -198,31 +306,59 @@
             transition: transform 0.2s, background-color 0.3s;
             z-index: 1000;
         }
-        .theme-toggle-btn:hover {
-            transform: scale(1.1);
-        }
 
-        .hidden { display: none; }
+        .theme-toggle-btn:hover { transform: scale(1.1); }
+
+        /* Адаптив под мобильные */
+        @media (max-width: 850px) {
+            .main-layout.has-sidebar {
+                flex-direction: column;
+            }
+            .profile-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1>The New World</h1>
+    <a href="https://t.me/NewWorldBlitz" target="_blank" class="title-link" title="Перейти в Telegram">
+        <h1>The New World</h1>
+    </a>
+
     <div class="total-subs" id="total-subs">Загрузка общей статистики...</div>
 
-    <!-- Переключатель вкладок -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('list')">📋 Список</button>
-        <button class="tab-btn" onclick="switchTab('chart')">📊 Диаграмма</button>
+    <div class="main-layout" id="main-layout">
+        <!-- Список -->
+        <div class="list-container" id="top">Загрузка данных...</div>
+
+        <!-- Профиль справа -->
+        <div class="profile-sidebar" id="profile-sidebar">
+            <button class="close-btn" onclick="closeProfile()">✕</button>
+            <img class="profile-avatar" id="p-avatar" src="" alt="Avatar">
+            <div class="profile-title" id="p-title"></div>
+            <div class="profile-subs" id="p-subs"></div>
+
+            <div class="profile-stats">
+                <div>
+                    <div class="stat-value" id="p-videos">-</div>
+                    <div class="stat-item">Видео</div>
+                </div>
+                <div>
+                    <div class="stat-value" id="p-views">-</div>
+                    <div class="stat-item">Просмотров</div>
+                </div>
+            </div>
+
+            <div class="profile-desc" id="p-desc"></div>
+
+            <div class="social-links" id="p-socials">
+                <!-- Ссылки генерируются JS -->
+            </div>
+        </div>
     </div>
 
-    <!-- Вкладка 1: Карточки -->
-    <div class="top-container" id="tab-list">Загрузка данных...</div>
-
-    <!-- Вкладка 2: График -->
-    <div class="top-container hidden" id="tab-chart"></div>
-
-    <!-- Кнопка смены темы -->
     <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="Сменить тему">☀️</button>
 
     <script>
@@ -250,12 +386,10 @@
             'UCvAMWkOiIaGVMZoaM1fcw4A'  //GangsterBlitz
         ];
 
-        const BAR_COLORS = [
-            '#e67e22', '#2ecc71', '#e74c3c', '#1abc9c', '#9b59b6', 
-            '#3498db', '#f1c40f', '#34495e', '#d35400', '#27ae60'
-        ];
+        const CUSTOM_SOCIALS = {};
 
-        /* Логика переключения тем */
+        let channelsData = [];
+
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -276,22 +410,6 @@
             btn.innerText = theme === 'dark' ? '☀️' : '🌙';
         }
 
-        /* Логика вкладок */
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tab-list').classList.add('hidden');
-            document.getElementById('tab-chart').classList.add('hidden');
-
-            if (tab === 'list') {
-                document.getElementById('tab-list').classList.remove('hidden');
-                event.target.classList.add('active');
-            } else {
-                document.getElementById('tab-chart').classList.remove('hidden');
-                event.target.classList.add('active');
-            }
-        }
-
-        /* Загрузка данных */
         async function fetchYoutubers() {
             const ids = CHANNEL_IDS.join(',');
             const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${ids}&key=${API_KEY}`;
@@ -306,63 +424,92 @@
                 document.getElementById('total-subs').innerText = 
                     `Общая аудитория: ${totalSubscribers.toLocaleString('ru-RU')} подписчиков`;
 
-                const channels = data.items.sort((a, b) => 
+                channelsData = data.items.sort((a, b) => 
                     Number(b.statistics.subscriberCount) - Number(a.statistics.subscriberCount)
                 );
 
-                const listContainer = document.getElementById('tab-list');
-                const chartContainer = document.getElementById('tab-chart');
-                
-                listContainer.innerHTML = '';
-                chartContainer.innerHTML = '';
-
-                const maxSubs = Number(channels[0].statistics.subscriberCount);
-
-                channels.forEach((channel, index) => {
-                    const rawSubs = Number(channel.statistics.subscriberCount);
-                    const subsFormatted = rawSubs.toLocaleString('ru-RU');
-                    const avatarUrl = channel.snippet.thumbnails.default.url;
-                    
-                    const channelUrl = channel.snippet.customUrl 
-                        ? `https://www.youtube.com/${channel.snippet.customUrl}`
-                        : `https://www.youtube.com/channel/${channel.id}`;
-
-                    // 1. Карточки
-                    const cardHTML = `
-                        <a href="${channelUrl}" target="_blank" class="card-link" title="Перейти на канал ${channel.snippet.title}">
-                            <div class="card">
-                                <div class="rank">#${index + 1}</div>
-                                <img class="avatar" src="${avatarUrl}" alt="${channel.snippet.title}">
-                                <div class="info">
-                                    <div class="name">${channel.snippet.title}</div>
-                                    <div class="subs">${subsFormatted} подписчиков</div>
-                                </div>
-                            </div>
-                        </a>
-                    `;
-                    listContainer.innerHTML += cardHTML;
-
-                    // 2. Диаграмма
-                    const barWidthPercent = Math.max((rawSubs / maxSubs) * 100, 5);
-                    const barColor = BAR_COLORS[index % BAR_COLORS.length];
-
-                    const chartHTML = `
-                        <a href="${channelUrl}" target="_blank" class="chart-row" title="${channel.snippet.title}">
-                            <div class="chart-name">${channel.snippet.title}</div>
-                            <div class="chart-bar-container">
-                                <div class="chart-bar" style="width: ${barWidthPercent}%; background-color: ${barColor};">
-                                    <img class="chart-avatar" src="${avatarUrl}" alt="${channel.snippet.title}">
-                                </div>
-                                <div class="chart-subs">${subsFormatted}</div>
-                            </div>
-                        </a>
-                    `;
-                    chartContainer.innerHTML += chartHTML;
-                });
+                renderList();
             } catch (error) {
                 console.error('Ошибка:', error);
-                document.getElementById('tab-list').innerText = 'Не удалось загрузить данные.';
+                document.getElementById('top').innerText = 'Не удалось загрузить данные.';
             }
+        }
+
+        function renderList() {
+            const container = document.getElementById('top');
+            container.innerHTML = '';
+            const maxSubs = Number(channelsData[0].statistics.subscriberCount);
+
+            channelsData.forEach((channel, index) => {
+                const rawSubs = Number(channel.statistics.subscriberCount);
+                const subsFormatted = rawSubs.toLocaleString('ru-RU');
+                const avatarUrl = channel.snippet.thumbnails.default.url;
+                const barWidthPercent = Math.max((rawSubs / maxSubs) * 100, 2);
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${channel.id}`;
+                card.onclick = () => openProfile(channel, card);
+
+                card.innerHTML = `
+                    <div class="card-bar" style="width: ${barWidthPercent}%;"></div>
+                    <div class="rank">#${index + 1}</div>
+                    <img class="avatar" src="${avatarUrl}" alt="${channel.snippet.title}">
+                    <div class="info">
+                        <div class="name">${channel.snippet.title}</div>
+                        <div class="subs">${subsFormatted} подписчиков</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openProfile(channel, cardElement) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            cardElement.classList.add('active');
+
+            document.getElementById('main-layout').classList.add('has-sidebar');
+            const sidebar = document.getElementById('profile-sidebar');
+            sidebar.classList.add('open');
+
+            document.getElementById('p-avatar').src = channel.snippet.thumbnails.medium.url;
+            document.getElementById('p-title').innerText = channel.snippet.title;
+            document.getElementById('p-subs').innerText = `${Number(channel.statistics.subscriberCount).toLocaleString('ru-RU')} подписчиков`;
+            
+            document.getElementById('p-videos').innerText = Number(channel.statistics.videoCount).toLocaleString('ru-RU');
+            document.getElementById('p-views').innerText = Number(channel.statistics.viewCount).toLocaleString('ru-RU');
+
+            document.getElementById('p-desc').innerText = channel.snippet.description || 'Описание отсутствует.';
+
+            const channelUrl = channel.snippet.customUrl 
+                ? `https://www.youtube.com/${channel.snippet.customUrl}`
+                : `https://www.youtube.com/channel/${channel.id}`;
+
+            const socialsContainer = document.getElementById('p-socials');
+            
+            // Вставляем кнопку с иконкой yt.svg
+            socialsContainer.innerHTML = `
+                <a href="${channelUrl}" target="_blank" class="social-btn yt-btn">
+                    <img src="yt.svg" class="social-icon" alt="YouTube">
+                    Перейти на YouTube
+                </a>
+            `;
+
+            if (CUSTOM_SOCIALS[channel.id]) {
+                CUSTOM_SOCIALS[channel.id].forEach(soc => {
+                    socialsContainer.innerHTML += `
+                        <a href="${soc.url}" target="_blank" class="social-btn">
+                            ${soc.name}
+                        </a>
+                    `;
+                });
+            }
+        }
+
+        function closeProfile() {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.getElementById('main-layout').classList.remove('has-sidebar');
+            document.getElementById('profile-sidebar').classList.remove('open');
         }
 
         initTheme();

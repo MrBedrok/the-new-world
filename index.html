@@ -5,22 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The New World</title>
     <style>
+        /* Переменные для ТЁМНОЙ темы (по умолчанию) */
+        :root {
+            --bg-color: #121212;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --card-bg: #1e1e1e;
+            --card-hover-bg: #282828;
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --tab-btn-bg: #2c2c2c;
+            --tab-btn-text: #ffffff;
+            --tab-btn-active-bg: #ffffff;
+            --tab-btn-active-text: #000000;
+            --avatar-bg: #333333;
+            --toggle-btn-bg: #ffffff;
+            --toggle-btn-text: #000000;
+        }
+
+        /* Переменные для СВЕТЛОЙ темы */
+        [data-theme="light"] {
+            --bg-color: #f9f9f9;
+            --text-primary: #000000;
+            --text-secondary: #555555;
+            --card-bg: #ffffff;
+            --card-hover-bg: #ffffff;
+            --card-shadow: rgba(0, 0, 0, 0.08);
+            --tab-btn-bg: #e0e0e0;
+            --tab-btn-text: #000000;
+            --tab-btn-active-bg: #000000;
+            --tab-btn-active-text: #ffffff;
+            --avatar-bg: #eee;
+            --toggle-btn-bg: #1e1e1e;
+            --toggle-btn-text: #ffffff;
+        }
+
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
-            background-color: #f9f9f9; 
+            background-color: var(--bg-color); 
+            color: var(--text-primary);
             padding: 20px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
+
         h1 { 
-            color: #000000; 
+            color: var(--text-primary); 
             margin-bottom: 5px;
             font-size: 32px;
         }
+
         .total-subs {
-            color: #555555;
+            color: var(--text-secondary);
             font-size: 16px;
             margin-bottom: 15px;
             font-weight: 500;
@@ -33,7 +71,8 @@
             margin-bottom: 25px;
         }
         .tab-btn {
-            background-color: #e0e0e0;
+            background-color: var(--tab-btn-bg);
+            color: var(--tab-btn-text);
             border: none;
             padding: 10px 20px;
             border-radius: 20px;
@@ -43,8 +82,8 @@
             transition: all 0.2s;
         }
         .tab-btn.active {
-            background-color: #000000;
-            color: white;
+            background-color: var(--tab-btn-active-bg);
+            color: var(--tab-btn-active-text);
         }
 
         .top-container { width: 100%; max-width: 700px; }
@@ -59,20 +98,21 @@
         .card { 
             display: flex; 
             align-items: center; 
-            background: white; 
+            background: var(--card-bg); 
             padding: 15px; 
             border-radius: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            box-shadow: 0 2px 8px var(--card-shadow); 
             transition: all 0.2s ease-in-out;
         }
         .card-link:hover .card {
             transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+            background-color: var(--card-hover-bg);
+            box-shadow: 0 6px 16px var(--card-shadow);
         }
         .rank { 
             font-size: 22px; 
             font-weight: bold; 
-            color: #333;
+            color: var(--text-primary);
             margin-right: 15px; 
             width: 30px; 
             text-align: center; 
@@ -83,11 +123,11 @@
             border-radius: 50%; 
             margin-right: 15px; 
             object-fit: cover;
-            background-color: #eee;
+            background-color: var(--avatar-bg);
         }
         .info { flex-grow: 1; }
-        .name { font-size: 18px; font-weight: bold; color: #111; }
-        .subs { color: #606060; font-size: 14px; margin-top: 2px; }
+        .name { font-size: 18px; font-weight: bold; color: var(--text-primary); }
+        .subs { color: var(--text-secondary); font-size: 14px; margin-top: 2px; }
 
         /* Вкладка 2: Горизонтальные полоски */
         .chart-row {
@@ -106,6 +146,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: var(--text-primary);
         }
         .chart-bar-container {
             flex-grow: 1;
@@ -125,7 +166,7 @@
         .chart-avatar {
             width: 30px;
             height: 30px;
-            border-radius: 50%; /* Круглые аватарки */
+            border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
         }
@@ -133,8 +174,32 @@
             margin-left: 10px;
             font-size: 14px;
             font-weight: bold;
-            color: #333;
+            color: var(--text-primary);
             white-space: nowrap;
+        }
+
+        /* Кнопка переключения темы в правом нижнем углу */
+        .theme-toggle-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--toggle-btn-bg);
+            color: var(--toggle-btn-text);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            transition: transform 0.2s, background-color 0.3s;
+            z-index: 1000;
+        }
+        .theme-toggle-btn:hover {
+            transform: scale(1.1);
         }
 
         .hidden { display: none; }
@@ -156,6 +221,9 @@
 
     <!-- Вкладка 2: График -->
     <div class="top-container hidden" id="tab-chart"></div>
+
+    <!-- Кнопка смены темы -->
+    <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="Сменить тему">☀️</button>
 
     <script>
         const API_KEY = 'AIzaSyDGUL1ZFawxiu1kYHUiHG9_EvOSAGTPTgE';
@@ -182,12 +250,33 @@
             'UCvAMWkOiIaGVMZoaM1fcw4A'  //GangsterBlitz
         ];
 
-        // Яркие цвета для полосок графиков
         const BAR_COLORS = [
             '#e67e22', '#2ecc71', '#e74c3c', '#1abc9c', '#9b59b6', 
             '#3498db', '#f1c40f', '#34495e', '#d35400', '#27ae60'
         ];
 
+        /* Логика переключения тем */
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const btn = document.getElementById('theme-btn');
+            btn.innerText = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        /* Логика вкладок */
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('tab-list').classList.add('hidden');
@@ -202,6 +291,7 @@
             }
         }
 
+        /* Загрузка данных */
         async function fetchYoutubers() {
             const ids = CHANNEL_IDS.join(',');
             const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${ids}&key=${API_KEY}`;
@@ -212,12 +302,10 @@
 
                 const data = await response.json();
 
-                // Общее кол-во подписчиков
                 const totalSubscribers = data.items.reduce((sum, ch) => sum + Number(ch.statistics.subscriberCount), 0);
                 document.getElementById('total-subs').innerText = 
                     `Общая аудитория: ${totalSubscribers.toLocaleString('ru-RU')} подписчиков`;
 
-                // Сортировка по убыванию
                 const channels = data.items.sort((a, b) => 
                     Number(b.statistics.subscriberCount) - Number(a.statistics.subscriberCount)
                 );
@@ -228,7 +316,6 @@
                 listContainer.innerHTML = '';
                 chartContainer.innerHTML = '';
 
-                // Самый топовый канал (для расчета ширины полосок в %)
                 const maxSubs = Number(channels[0].statistics.subscriberCount);
 
                 channels.forEach((channel, index) => {
@@ -240,7 +327,7 @@
                         ? `https://www.youtube.com/${channel.snippet.customUrl}`
                         : `https://www.youtube.com/channel/${channel.id}`;
 
-                    // 1. Отрисовка списка (Карточки)
+                    // 1. Карточки
                     const cardHTML = `
                         <a href="${channelUrl}" target="_blank" class="card-link" title="Перейти на канал ${channel.snippet.title}">
                             <div class="card">
@@ -255,8 +342,8 @@
                     `;
                     listContainer.innerHTML += cardHTML;
 
-                    // 2. Отрисовка диаграммы
-                    const barWidthPercent = Math.max((rawSubs / maxSubs) * 100, 5); // минимум 5% ширины
+                    // 2. Диаграмма
+                    const barWidthPercent = Math.max((rawSubs / maxSubs) * 100, 5);
                     const barColor = BAR_COLORS[index % BAR_COLORS.length];
 
                     const chartHTML = `
@@ -278,6 +365,7 @@
             }
         }
 
+        initTheme();
         fetchYoutubers();
     </script>
 </body>

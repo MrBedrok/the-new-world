@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The New World</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #f9f9f9; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin: 0;
+        }
+        h1 { 
+            color: #000000; 
+            margin-bottom: 5px;
+            font-size: 32px;
+        }
+        .total-subs {
+            color: #555555;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* Кнопки переключения вкладок */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .tab-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background-color: #000000;
+            color: white;
+        }
+
+        .top-container { width: 100%; max-width: 700px; }
+
+        /* Вкладка 1: Карточки */
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            margin: 10px 0;
+        }
+        .card { 
+            display: flex; 
+            align-items: center; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            transition: all 0.2s ease-in-out;
+        }
+        .card-link:hover .card {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .rank { 
+            font-size: 22px; 
+            font-weight: bold; 
+            color: #333;
+            margin-right: 15px; 
+            width: 30px; 
+            text-align: center; 
+        }
+        .avatar { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%; 
+            margin-right: 15px; 
+            object-fit: cover;
+            background-color: #eee;
+        }
+        .info { flex-grow: 1; }
+        .name { font-size: 18px; font-weight: bold; color: #111; }
+        .subs { color: #606060; font-size: 14px; margin-top: 2px; }
+
+        /* Вкладка 2: Горизонтальные полоски */
+        .chart-row {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            text-decoration: none;
+            color: inherit;
+        }
+        .chart-name {
+            width: 140px;
+            text-align: right;
+            padding-right: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chart-bar-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+        .chart-bar {
+            height: 36px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+            transition: width 0.6s ease-out;
+            min-width: 40px;
+        }
+        .chart-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%; /* Круглые аватарки */
+            border: 2px solid white;
+            object-fit: cover;
+        }
+        .chart-subs {
+            margin-left: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>The New World</h1>
+    <div class="total-subs" id="total-subs">Загрузка общей статистики...</div>
+
+    <!-- Переключатель вкладок -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('list')">📋 Список</button>
+        <button class="tab-btn" onclick="switchTab('chart')">📊 Диаграмма</button>
+    </div>
+
+    <!-- Вкладка 1: Карточки -->
+    <div class="top-container" id="tab-list">Загрузка данных...</div>
+
+    <!-- Вкладка 2: График -->
+    <div class="top-container hidden" id="tab-chart"></div>
+
+    <script>
+        const API_KEY = 'AIzaSyDGUL1ZFawxiu1kYHUiHG9_EvOSAGTPTgE';
+
+        const CHANNEL_IDS = [
+            'UCUf0B10jmJgMGEaIJz4WYCg', //ГигаТанкист
+            'UCKdUKxtqNR2pu_hejFMcPng', //Рв_Реббит
+            'UCU7ibb3QEG0QZlT7K73ougg',  //БураскАдидас
+            'UC4yABm3nOGLO5Dw3JdLOOSw', //Уранофил
+            'UCzy14oq4lmBYzN9jQ39D4Yw', //NewFton
+            'UCOJaaiwti0qCoUreMi1FOSg', //Команданте
+            'UCP1x1rxnStKreLblrm7vlMg', //jrjikmnd [0-60]
+            'UCtH8SzOzXPJbz8957shhZkg', //Клубника_Blitz
+            'UCVFM_hwowa7VpAT1V9xPhSQ', //Ritmichn
+            'UCaVgYbisiZorJkUrfKSPeew', //Catzo_TV
+            'UC-35XqT7UGeWZMhsd_wHfUg', //IRBIS Blitz
+            'UC88hvVypr9Xkm8MMwUOdurQ', //PERSONA
+            'UClM7TbLEPphg2jMVrCiWO7g', //Rangks
+            'UC2aSg643qfWQbvh3DP4uiuA', //Toxic
+            'UCS88gan05NdxOoIp64xm9Hw', //Vokov_Positiv
+            'UCSqohCdjrbcVuUOYubL597g', //Танковая хижина 
+            'UCQh5jEITVJlPJVMRZP-d0wQ', //remfod
+            'UCc0I4Rss-9Wll897xmdi8PA', //limengo
+            'UCvAMWkOiIaGVMZoaM1fcw4A'  //GangsterBlitz
+        ];
+
+        // Яркие цвета для полосок графиков
+        const BAR_COLORS = [
+            '#e67e22', '#2ecc71', '#e74c3c', '#1abc9c', '#9b59b6', 
+            '#3498db', '#f1c40f', '#34495e', '#d35400', '#27ae60'
+        ];
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-list').classList.add('hidden');
+            document.getElementById('tab-chart').classList.add('hidden');
+
+            if (tab === 'list') {
+                document.getElementById('tab-list').classList.remove('hidden');
+                event.target.classList.add('active');
+            } else {
+                document.getElementById('tab-chart').classList.remove('hidden');
+                event.target.classList.add('active');
+            }
+        }
+
+        async function fetchYoutubers() {
+            const ids = CHANNEL_IDS.join(',');
+            const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${ids}&key=${API_KEY}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Ошибка сети: ' + response.status);
+
+                const data = await response.json();
+
+                // Общее кол-во подписчиков
+                const totalSubscribers = data.items.reduce((sum, ch) => sum + Number(ch.statistics.subscriberCount), 0);
+                document.getElementById('total-subs').innerText = 
+                    `Общая аудитория: ${totalSubscribers.toLocaleString('ru-RU')} подписчиков`;
+
+                // Сортировка по убыванию
+                const channels = data.items.sort((a, b) => 
+                    Number(b.statistics.subscriberCount) - Number(a.statistics.subscriberCount)
+                );
+
+                const listContainer = document.getElementById('tab-list');
+                const chartContainer = document.getElementById('tab-chart');
+                
+                listContainer.innerHTML = '';
+                chartContainer.innerHTML = '';
+
+                // Самый топовый канал (для расчета ширины полосок в %)
+                const maxSubs = Number(channels[0].statistics.subscriberCount);
+
+                channels.forEach((channel, index) => {
+                    const rawSubs = Number(channel.statistics.subscriberCount);
+                    const subsFormatted = rawSubs.toLocaleString('ru-RU');
+                    const avatarUrl = channel.snippet.thumbnails.default.url;
+                    
+                    const channelUrl = channel.snippet.customUrl 
+                        ? `https://www.youtube.com/${channel.snippet.customUrl}`
+                        : `https://www.youtube.com/channel/${channel.id}`;
+
+                    // 1. Отрисовка списка (Карточки)
+                    const cardHTML = `
+                        <a href="${channelUrl}" target="_blank" class="card-link" title="Перейти на канал ${channel.snippet.title}">
+                            <div class="card">
+                                <div class="rank">#${index + 1}</div>
+                                <img class="avatar" src="${avatarUrl}" alt="${channel.snippet.title}">
+                                <div class="info">
+                                    <div class="name">${channel.snippet.title}</div>
+                                    <div class="subs">${subsFormatted} подписчиков</div>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                    listContainer.innerHTML += cardHTML;
+
+                    // 2. Отрисовка диаграммы
+                    const barWidthPercent = Math.max((rawSubs / maxSubs) * 100, 5); // минимум 5% ширины
+                    const barColor = BAR_COLORS[index % BAR_COLORS.length];
+
+                    const chartHTML = `
+                        <a href="${channelUrl}" target="_blank" class="chart-row" title="${channel.snippet.title}">
+                            <div class="chart-name">${channel.snippet.title}</div>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar" style="width: ${barWidthPercent}%; background-color: ${barColor};">
+                                    <img class="chart-avatar" src="${avatarUrl}" alt="${channel.snippet.title}">
+                                </div>
+                                <div class="chart-subs">${subsFormatted}</div>
+                            </div>
+                        </a>
+                    `;
+                    chartContainer.innerHTML += chartHTML;
+                });
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('tab-list').innerText = 'Не удалось загрузить данные.';
+            }
+        }
+
+        fetchYoutubers();
+    </script>
+</body>
+</html>

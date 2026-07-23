@@ -26,6 +26,7 @@
             --social-btn-bg: #2a2a2a;
             --overlay-bg: rgba(0, 0, 0, 0.7);
             --nav-active: #3ea6ff;
+            --live-color: #ff4e4e;
         }
 
         /* СВЕТЛАЯ ТЕМА */
@@ -45,6 +46,7 @@
             --social-btn-bg: #eaeaea;
             --overlay-bg: rgba(0, 0, 0, 0.4);
             --nav-active: #0066cc;
+            --live-color: #cc0000;
         }
 
         body { 
@@ -157,6 +159,10 @@
             border: 2px solid transparent;
         }
 
+        .card.is-live-card {
+            border-color: var(--live-color);
+        }
+
         .card-bar {
             position: absolute;
             left: 0;
@@ -203,9 +209,50 @@
             border: 1px solid var(--bar-bg);
         }
 
-        .info { flex-grow: 1; }
+        .info { 
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         .name { font-size: 18px; font-weight: bold; color: var(--text-primary); }
         .subs { color: var(--text-secondary); font-size: 14px; margin-top: 2px; }
+
+        /* Плашка В ЭФИРЕ */
+        .live-badge {
+            background-color: var(--live-color);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 7px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            animation: pulse 1.8s infinite;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
 
         /* Сайдбар профиля справа (ПК) */
         .profile-sidebar {
@@ -330,6 +377,12 @@
         .yt-btn { 
             background-color: #ff0000; 
             color: #ffffff; 
+        }
+
+        .live-stream-btn {
+            background-color: var(--live-color);
+            color: #ffffff;
+            border: none;
         }
 
         /* --- СТИЛИ ДЛЯ ЛЕНТЫ ВИДЕО --- */
@@ -588,6 +641,7 @@
 
         const CUSTOM_SOCIALS = {};
         let channelsData = [];
+        let liveStatusMap = {}; // Хранит { channelId: videoId_прямого_эфира }
         let isFeedLoaded = false;
 
         function initTheme() {
@@ -634,24 +688,50 @@
             }
         }
 
+        /* ПРОВЕРКА, СТРИМИТ ЛИ КТО-ТО ПРЯМО СЕЙЧАС */
+        async function checkLiveStreams() {
+            const livePromises = CHANNEL_IDS.map(async (channelId) => {
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&eventType=live&key=${API_KEY}`;
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        return { channelId, videoId: data.items[0].id.videoId };
+                    }
+                } catch (e) {
+                    console.error('Ошибка проверки стрима:', e);
+                }
+                return null;
+            });
+
+            const results = await Promise.all(livePromises);
+            results.forEach(res => {
+                if (res) {
+                    liveStatusMap[res.channelId] = res.videoId;
+                }
+            });
+        }
+
         /* ЗАГРУЗКА ТОПА КАНАЛОВ */
         async function fetchYoutubers() {
             const ids = CHANNEL_IDS.join(',');
             const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${ids}&key=${API_KEY}`;
 
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Ошибка сети: ' + response.status);
+                // Параллельно запускаем проверку стримов и загрузку инфо
+                await Promise.all([
+                    checkLiveStreams(),
+                    fetch(url).then(r => r.json()).then(data => {
+                        const totalSubscribers = data.items.reduce((sum, ch) => sum + Number(ch.statistics.subscriberCount), 0);
+                        document.getElementById('total-subs').innerText = 
+                            `Общая аудитория: ${totalSubscribers.toLocaleString('ru-RU')} подписчиков`;
 
-                const data = await response.json();
-
-                const totalSubscribers = data.items.reduce((sum, ch) => sum + Number(ch.statistics.subscriberCount), 0);
-                document.getElementById('total-subs').innerText = 
-                    `Общая аудитория: ${totalSubscribers.toLocaleString('ru-RU')} подписчиков`;
-
-                channelsData = data.items.sort((a, b) => 
-                    Number(b.statistics.subscriberCount) - Number(a.statistics.subscriberCount)
-                );
+                        channelsData = data.items.sort((a, b) => 
+                            Number(b.statistics.subscriberCount) - Number(a.statistics.subscriberCount)
+                        );
+                    })
+                ]);
 
                 renderList();
             } catch (error) {
@@ -670,9 +750,11 @@
                 const subsFormatted = rawSubs.toLocaleString('ru-RU');
                 const avatarUrl = channel.snippet.thumbnails.default.url;
                 const barWidthPercent = Math.max((rawSubs / maxSubs) * 100, 2);
+                
+                const isLive = liveStatusMap[channel.id];
 
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = `card ${isLive ? 'is-live-card' : ''}`;
                 card.id = `card-${channel.id}`;
                 card.onclick = () => openProfile(channel, card);
 
@@ -681,7 +763,10 @@
                     <div class="rank">#${index + 1}</div>
                     <img class="avatar" src="${avatarUrl}" alt="${channel.snippet.title}">
                     <div class="info">
-                        <div class="name">${channel.snippet.title}</div>
+                        <div class="name-wrapper">
+                            <span class="name">${channel.snippet.title}</span>
+                            ${isLive ? '<span class="live-badge"><span class="live-dot"></span>В эфире</span>' : ''}
+                        </div>
                         <div class="subs">${subsFormatted} подписчиков</div>
                     </div>
                 `;
@@ -701,8 +786,13 @@
                 document.getElementById('modal-overlay').classList.add('active');
             }
 
+            const liveVideoId = liveStatusMap[channel.id];
+
             document.getElementById('p-avatar').src = channel.snippet.thumbnails.medium.url;
-            document.getElementById('p-title').innerText = channel.snippet.title;
+            document.getElementById('p-title').innerHTML = `
+                ${channel.snippet.title}
+                ${liveVideoId ? '<br><span class="live-badge" style="margin-top:6px;"><span class="live-dot"></span>Прямой эфир</span>' : ''}
+            `;
             document.getElementById('p-subs').innerText = `${Number(channel.statistics.subscriberCount).toLocaleString('ru-RU')} подписчиков`;
             
             document.getElementById('p-videos').innerText = Number(channel.statistics.videoCount).toLocaleString('ru-RU');
@@ -716,7 +806,18 @@
 
             const socialsContainer = document.getElementById('p-socials');
             
-            socialsContainer.innerHTML = `
+            let buttonsHTML = '';
+
+            // Если прямо сейчас идет стрим — ставим красную кнопку «Смотреть трансляцию» первой
+            if (liveVideoId) {
+                buttonsHTML += `
+                    <a href="https://www.youtube.com/watch?v=${liveVideoId}" target="_blank" class="social-btn live-stream-btn">
+                        🔴 Смотреть прямой эфир
+                    </a>
+                `;
+            }
+
+            buttonsHTML += `
                 <a href="${channelUrl}" target="_blank" class="social-btn yt-btn">
                     <img src="yt.svg" class="social-icon" alt="YouTube">
                     Перейти на YouTube
@@ -725,13 +826,15 @@
 
             if (CUSTOM_SOCIALS[channel.id]) {
                 CUSTOM_SOCIALS[channel.id].forEach(soc => {
-                    socialsContainer.innerHTML += `
+                    buttonsHTML += `
                         <a href="${soc.url}" target="_blank" class="social-btn">
                             ${soc.name}
                         </a>
                     `;
                 });
             }
+
+            socialsContainer.innerHTML = buttonsHTML;
         }
 
         function closeProfile() {
